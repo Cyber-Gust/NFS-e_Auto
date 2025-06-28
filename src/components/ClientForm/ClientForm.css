@@ -1,0 +1,117 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 500px;
+}
+
+.client-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.client-form label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* --- ALTERAÇÃO 1: Campos Nativos --- */
+/* Modifiquei esta regra que você já tinha */
+.client-form input, .client-form select, .client-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  background-color: transparent; /* MODIFICADO de var(--secondary-gray) para transparent */
+  color: var(--text-dark); /* ADICIONADO para garantir que o texto digitado seja legível */
+  font-size: 16px;
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.button-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  background-color: #ffffff;
+  color: var(--text-dark);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* --- ALTERAÇÃO 2: Estilos para o React-Select --- */
+/* Adicione este novo bloco ao final do arquivo. Ele é necessário porque 
+o react-select não usa um <select> normal e ignora a regra acima. */
+
+/* A "caixa" principal do seletor de serviços */
+.client-form .select__control {
+  background-color: transparent !important;
+  border: 1px solid var(--border-gray) !important;
+  border-radius: 8px !important;
+  padding: 2px; /* Pequeno ajuste de padding */
+}
+
+/* O fundo da lista de opções quando o menu está aberto */
+.client-form .select__menu {
+  /* Mantém o fundo branco para que as opções sejam legíveis */
+  background-color: #ffffff !important;
+}
+
+/* Cor do texto do que já foi selecionado */
+.client-form .select__multi-value__label {
+  color: var(--text-dark, #333);
+}
+
+/* Cor do texto do placeholder ("Selecione os serviços...") */
+.client-form .select__placeholder {
+  color: var(--placeholder-color, #888);
+}
+
+.client-form .select__multi-value {
+  background-color: var(--primary-blue); /* Cor de fundo do pill */
+  border-radius: 4px; /* Cantos um pouco mais suaves */
+  margin: 2px; /* Pequeno espaçamento entre os pills */
+}
+
+/* O texto dentro do "pill" */
+.client-form .select__multi-value__label {
+  color: white; /* Cor do texto */
+  font-size: 14px; /* Tamanho da fonte um pouco menor */
+  padding: 3px;
+  padding-left: 6px;
+}
+
+/* O ícone "X" para remover o "pill" */
+.client-form .select__multi-value__remove {
+  color: white; /* Cor do "X" */
+  cursor: pointer;
+  border-top-right-radius: 4px;    /* Arredonda os cantos junto com o container */
+  border-bottom-right-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Efeito ao passar o mouse sobre o "X" */
+.client-form .select__multi-value__remove:hover {
+  background-color: #0069d9; /* Um tom de azul um pouco mais escuro */
+  color: #e0e0e0;
+}

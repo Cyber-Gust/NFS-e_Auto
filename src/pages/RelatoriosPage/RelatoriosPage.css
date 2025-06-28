@@ -1,0 +1,14 @@
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+}
+
+.status-emitida { background-color: var(--status-green); }
+.status-pendente { background-color: var(--status-gray); }
+.status-processando { background-color: var(--status-yellow); color: var(--text-dark); }
+.status-erro { background-color: var(--status-red); }
+.status-cancelada { background-color: var(--border-gray); color: var(--text-dark); }

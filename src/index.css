@@ -1,0 +1,24 @@
+:root {
+  --primary-blue: #007aff; /* Azul estilo Apple */
+  --light-blue: #f0f8ff;   /* Azul muito claro para fundos */
+  --secondary-gray: #dcf2ff; /* Cinza claro para fundos de input */
+  --border-gray: #e5e5ea;
+  --text-dark: #1c1c1e;
+  --text-light: #ffffff;
+  --radius: 12px; /* Bordas arredondadas */
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--light-blue);
+  color: var(--text-dark);
+}
+
+* {
+  box-sizing: border-box;
+}

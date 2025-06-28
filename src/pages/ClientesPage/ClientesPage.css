@@ -1,0 +1,54 @@
+.clients-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.clients-table th, .clients-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-gray);
+}
+.clients-table th {
+  font-weight: 600;
+}
+.edit-button {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.page-button-primary {
+  /* --- Estrutura e Cor --- */
+  background-color: var(--primary-blue); /* Cor de fundo principal */
+  color: #FFFFFF;                       /* Texto branco para alto contraste */
+  border: none;                         /* Sem borda para um look limpo */
+  
+  /* --- Espaçamento e Forma --- */
+  padding: 12px 24px;                   /* Espaçamento interno generoso */
+  border-radius: 6px;                   /* Cantos levemente arredondados */
+
+  /* --- Texto --- */
+  font-size: 16px;                      /* Tamanho de fonte legível */
+  font-weight: 600;                     /* Peso da fonte (o mesmo do <th>) */
+  text-align: center;
+  text-decoration: none;                /* Remove sublinhado se usado em <a> */
+
+  /* --- Interatividade --- */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;     /* Transição suave para hover/active */
+}
+
+/* Efeito ao passar o mouse por cima */
+.page-button-primary:hover {
+  filter: brightness(90%);              /* Escurece levemente o botão */
+  transform: translateY(-2px);          /* Efeito sutil de "elevação" */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidade */
+}
+
+/* Efeito ao clicar */
+.page-button-primary:active {
+  filter: brightness(80%);              /* Escurece um pouco mais */
+  transform: translateY(0);             /* Remove a elevação do hover */
+  box-shadow: none;                     /* Remove a sombra */
+}
