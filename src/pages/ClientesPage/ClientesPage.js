@@ -71,4 +71,47 @@ export default function ClientesPage() {
         <table className="clients-table">
           <thead>
             <tr>
-              <th
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>Email</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan="4">Carregando...</td></tr>
+            ) : (
+              clients.map(client => (
+                <tr key={client.id}>
+                  <td>{client.name}</td>
+                  <td>{client.phone}</td>
+                  <td>{client.email}</td>
+                  <td>
+                    {/* ALTERAÇÃO 3: Substituir os botões por ícones */}
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => handleEditClient(client)} 
+                        className="action-button"
+                        title="Editar Cliente" // Dica de acessibilidade
+                      >
+                        <FaEdit />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteClient(client.id, client.name)} 
+                        className="action-button delete"
+                        title="Excluir Cliente" // Dica de acessibilidade
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      {showModal && <ClientForm client={selectedClient} onClose={handleCloseModal} />}
+    </div>
+  );
+}

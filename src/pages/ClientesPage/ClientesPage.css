@@ -52,3 +52,40 @@
   transform: translateY(0);             /* Remove a elevação do hover */
   box-shadow: none;                     /* Remove a sombra */
 }
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Espaçamento entre os ícones */
+}
+
+/* Estilo base para cada botão de ícone */
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%; /* Deixa a área de clique circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px; /* Tamanho do ícone */
+  color: #666; /* Cor padrão do ícone */
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efeito ao passar o mouse (para todos os botões de ação) */
+.action-button:hover {
+  transform: scale(1.15); /* Aumenta um pouco o ícone */
+  background-color: #f0f0f0; /* Fundo sutil ao passar o mouse */
+}
+
+/* Cor específica para o ícone de edição no hover */
+.action-button:hover {
+  color: var(--primary-blue, #007BFF); 
+}
+
+/* Cor específica para o ícone de lixeira no hover */
+.action-button.delete:hover {
+  color: #E53E3E; /* Vermelho para indicar perigo/exclusão */
+}
