@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 
 // Importando as páginas
 import LoginPage from './pages/LoginPage/LoginPage';
+import SignUpPage from './pages/SignUpPage/SignUpPage';
 import DashboardLayout from './components/DashboardLayout/DashboardLayout';
 import ClientesPage from './pages/ClientesPage/ClientesPage';
 import RealizarVendaPage from './pages/RealizarVendaPage/RealizarVendaPage';
@@ -42,6 +43,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
           
           <Route 
             path="/" 

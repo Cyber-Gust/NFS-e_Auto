@@ -56,3 +56,20 @@
   margin-top: 16px;
   font-weight: bold;
 }
+
+.login-error {
+  margin-top: 16px;
+  font-weight: bold;
+  color: var(--text-error);
+}
+
+.signup-link {
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.signup-link a {
+  color: var(--primary-blue);
+  font-weight: bold;
+  text-decoration: none;
+}
