@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import Select from 'react-select'; // Importa o react-select
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
+import ClientForm from '../../components/ClientForm/ClientForm'; // Importa o formulário de cliente
 import '../../components/ClientForm/ClientForm.css';
+import './RealizarVendaPage.css'; // Importa o CSS da página
 
-// ATUALIZADO: Nova lista de serviços
+// Sua lista de serviços
 const servicosOptions = [
   { value: 'Cristalização', label: 'Cristalização' },
   { value: 'Vitrificação', label: 'Vitrificação' },
@@ -23,43 +25,59 @@ const servicosOptions = [
 export default function RealizarVendaPage() {
     const { user } = useAuth();
     const [clients, setClients] = useState([]);
+    const [showClientModal, setShowClientModal] = useState(false); // NOVO: Estado para o modal
     const [formData, setFormData] = useState({
         client_id: '',
         service_description: [], 
         value: '',
         payment_method: '',
         installments: 1,
-        observations: '' // NOVO: Campo de observações adicionado ao estado
+        observations: ''
     });
     const [loading, setLoading] = useState(false);
 
+    // Função para buscar clientes
+    async function fetchClients() {
+        const { data } = await supabase.from('clients').select('id, name').order('name');
+        setClients(data || []);
+    }
+
     useEffect(() => {
-        async function fetchClients() {
-            const { data } = await supabase.from('clients').select('id, name').order('name');
-            setClients(data || []);
-        }
         fetchClients();
     }, []);
 
-    // O mesmo handleChange funciona para o novo textarea
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSelectChange = (selectedOptions) => {
+    const handleMultiSelectChange = (selectedOptions) => {
         setFormData(prev => ({ ...prev, service_description: selectedOptions || [] }));
+    };
+    
+    // NOVO: Função para lidar com o cliente recém-criado
+    const handleClientCreated = (newClient) => {
+        fetchClients(); // Atualiza a lista de clientes
+        setFormData(prev => ({ ...prev, client_id: newClient.id })); // Seleciona o novo cliente
+        setShowClientModal(false); // Fecha o modal
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (formData.service_description.length === 0) {
+            alert("Por favor, selecione pelo menos um serviço.");
+            return;
+        }
         setLoading(true);
         try {
             const descriptionString = formData.service_description.map(option => option.label).join(', ');
 
             const dataToSave = {
-                ...formData,
+                client_id: formData.client_id,
                 service_description: descriptionString,
-                // O campo 'observations' já está incluído aqui pelo ...formData
+                value: formData.value,
+                payment_method: formData.payment_method,
+                installments: formData.installments,
+                observations: formData.observations
             };
 
             const { data: sale, error } = await supabase
@@ -78,7 +96,6 @@ export default function RealizarVendaPage() {
             });
 
             alert('NFS-e enviada para processamento!');
-            // ATUALIZADO: Resetar o formulário com o campo de observações
             setFormData({ client_id: '', service_description: [], value: '', payment_method: '', installments: 1, observations: '' });
         } catch(error) {
             alert(`Erro: ${error.message}`);
@@ -93,12 +110,15 @@ export default function RealizarVendaPage() {
                 <h1>Realizar Venda</h1>
             </div>
             <div className="page-card">
-                <form onSubmit={handleSubmit} className="client-form">
+                <form onSubmit={handleSubmit} className="client-form sale-form">
                     <label>Cliente</label>
-                    <select name="client_id" value={formData.client_id} onChange={handleChange} required>
-                        <option value="" disabled>Selecione um cliente</option>
-                        {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <div className="client-selector-group">
+                        <select name="client_id" value={formData.client_id} onChange={handleChange} required>
+                            <option value="" disabled>Selecione um cliente</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <button type="button" onClick={() => setShowClientModal(true)} className="add-client-button">+</button>
+                    </div>
 
                     <label>Serviços Realizados</label>
                     <Select
@@ -109,8 +129,7 @@ export default function RealizarVendaPage() {
                         classNamePrefix="select"
                         placeholder="Selecione os serviços..."
                         value={formData.service_description}
-                        onChange={handleSelectChange}
-                        required
+                        onChange={handleMultiSelectChange}
                     />
                     
                     <label>Valor (R$)</label>
@@ -125,7 +144,6 @@ export default function RealizarVendaPage() {
                         <option value="Cartão de Crédito">Cartão de Crédito</option>
                     </select>
 
-                    {/* NOVO: Campo de observações */}
                     <label>Observações</label>
                     <textarea 
                         name="observations" 
@@ -142,6 +160,9 @@ export default function RealizarVendaPage() {
                     </div>
                 </form>
             </div>
+            
+            {/* Renderiza o modal de formulário do cliente se showClientModal for true */}
+            {showClientModal && <ClientForm onClose={() => setShowClientModal(false)} onClientCreated={handleClientCreated} />}
         </div>
     );
 }

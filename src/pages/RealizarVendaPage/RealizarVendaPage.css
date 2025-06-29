@@ -1,4 +1,30 @@
 .sale-form {
     max-width: 600px;
-    margin: 0 auto;
+    
+}
+
+.client-selector-group {
+    display: flex;
+    align-items: left;
+    gap: 8px;
+}
+
+.client-selector-group select {
+    flex-grow: 1; /* Faz o select ocupar o espaço disponível */
+}
+
+.add-client-button {
+    flex-shrink: 0; /* Impede que o botão encolha */
+    height: 41px; /* Mesma altura do input/select */
+    width: 41px;
+    border-radius: 8px;
+    border: 1px solid var(--border-gray);
+    background-color: var(--secondary-gray);
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-blue);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
