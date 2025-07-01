@@ -32,7 +32,7 @@ export default function DashboardLayout() {
 
         <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
             <div className="sidebar-content">
-                <h1 className="sidebar-title">Estética Gestor</h1>
+                <h1 className="sidebar-title">Black Brian PDV</h1>
                 <nav className="sidebar-nav">
                     <NavLink to="/clientes" onClick={closeMenu}>Clientes</NavLink>
                     <NavLink to="/vendas" onClick={closeMenu}>Realizar Venda</NavLink>
