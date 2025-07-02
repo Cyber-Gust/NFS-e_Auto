@@ -90,8 +90,7 @@ export default function RealizarVendaPage() {
                 .single();
             if (error) throw error;
             
-            const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            const response = await axios.post(`${backendUrl}/api/nfse/emitir`, {
+            const response = await axios.post('/api/emitir', {
                 saleId: sale.id,
                 clientId: sale.client_id,
             });
