@@ -32,9 +32,9 @@ export default function RelatoriosPage() {
                         <tr>
                             <th>Data</th>
                             <th>Cliente</th>
-                            <th>Descrição</th>
                             <th>Valor</th>
                             <th>Status NFS-e</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,12 +45,20 @@ export default function RelatoriosPage() {
                                 <tr key={sale.id}>
                                     <td>{new Date(sale.created_at).toLocaleDateString('pt-BR')}</td>
                                     <td>{sale.clients?.name || 'N/A'}</td>
-                                    <td>{sale.service_description}</td>
                                     <td>{parseFloat(sale.value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                                     <td>
                                         <span className={`status-badge ${getStatusClass(sale.status)}`}>
                                             {sale.status}
                                         </span>
+                                    </td>
+                                    <td>
+                                        {/* <<< LÓGICA ATUALIZADA >>> */}
+                                        {/* Mostra o botão apenas se a nota foi emitida e o link existe */}
+                                        {sale.status === 'Emitida' && sale.nfs_link_pdf && (
+                                            <a href={sale.nfs_link_pdf} target="_blank" rel="noopener noreferrer" className="view-invoice-button">
+                                                Ver Nota
+                                            </a>
+                                        )}
                                     </td>
                                 </tr>
                             ))

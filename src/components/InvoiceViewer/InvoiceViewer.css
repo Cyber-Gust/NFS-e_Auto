@@ -1,0 +1,50 @@
+/* Arquivo: src/components/InvoiceViewer/InvoiceViewer.css */
+.invoice-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.invoice-viewer-content {
+  background: white;
+  padding: 24px;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 800px; /* Maior para caber o PDF */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.invoice-viewer-content h2 {
+    color: var(--status-green);
+    text-align: center;
+    margin-top: 0;
+}
+.invoice-viewer-content p {
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    color: #666;
+}
+.pdf-container {
+    flex-grow: 1; /* Faz o iframe ocupar o espaço disponível */
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    overflow: hidden; /* Garante que o iframe respeite as bordas */
+}
+.pdf-container iframe {
+    border: none;
+}
+.invoice-viewer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  flex-shrink: 0;
+}
