@@ -1,9 +1,10 @@
-// Arquivo: services/nfseservice.js (VERSÃO CORRIGIDA E FINAL)
+// Arquivo: /api/_utils/nfseService.js
 
-const soap = require('node-soap');
-const { createClient } = require('@supabase/supabase-js');
-const { SignedXml } = require('xml-crypto');
-const forge = require('node-forge');
+import soap from 'node-soap';
+import { createClient } from '@supabase/supabase-js';
+import { SignedXml } from 'xml-crypto';
+// <<< A CORREÇÃO ESTÁ NESTA LINHA >>>
+import * as forge from 'node-forge'; // Alterado de 'import forge' para 'import * as forge'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -13,13 +14,14 @@ function signXml(xml, tag) {
     const password = process.env.CERTIFICATE_PASSWORD;
 
     if (!pfxBase64 || !password) {
-      throw new Error("Certificado ou senha não configurados no .env");
+      throw new Error("Certificado ou senha não configurados nas variáveis de ambiente.");
     }
 
     const pfxBuffer = Buffer.from(pfxBase64, 'base64');
     const p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
     const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
 
+    // Esta é a parte que estava a falhar antes e que agora deve funcionar
     const privateKeyObj = p12.getBags({ bagType: forge.pki.Bag.PKCS8_SHROUDED_KEY_BAG })[forge.pki.Bag.PKCS8_SHROUDED_KEY_BAG][0];
     const privateKey = forge.pki.privateKeyToPem(privateKeyObj.key);
 
@@ -41,7 +43,7 @@ function signXml(xml, tag) {
   }
 }
 
-async function emitirNotaFiscal(saleId, clientId) {
+export async function emitirNotaFiscal(saleId, clientId) {
   await supabase.from('sales').update({ status: 'Processando' }).eq('id', saleId);
 
   try {
@@ -55,7 +57,7 @@ async function emitirNotaFiscal(saleId, clientId) {
     const now = new Date();
     const isoDate = now.toISOString();
     const value = parseFloat(saleData.value).toFixed(2);
-    const aliquota = 0.02; // Sua alíquota de 2%
+    const aliquota = 0.02;
     const valorIss = (value * aliquota).toFixed(2);
     const valorLiquido = value;
 
@@ -125,7 +127,7 @@ async function emitirNotaFiscal(saleId, clientId) {
       
     const signedXml = signXml(xmlRps, 'InfDeclaracaoPrestacaoServico');
     
-    const url = `https://saojoaodelrei.nfiss.com.br/?WSDL`; // URL de Produção
+    const url = `https://saojoaodelrei.nfiss.com.br/?WSDL`;
     const soapClient = await soap.createClientAsync(url);
     
     const soapHeader = `<nfseCabecMsg xmlns="http://www.abrasf.org.br/nfse.xsd"><cabecalho versao="2.02"><versaoDados>2.02</versaoDados></cabecalho></nfseCabecMsg>`;
@@ -138,10 +140,6 @@ async function emitirNotaFiscal(saleId, clientId) {
     if (responseData.ListaNfse) {
       const compNfse = responseData.ListaNfse.CompNfse;
       const nfse = compNfse.Nfse.InfNfse;
-
-      // <<< IMPLEMENTAÇÃO CHAVE AQUI >>>
-      // Captura o link do PDF da resposta da prefeitura.
-      // O provedor NF-iss geralmente coloca o link na tag "OutrasInformacoes".
       const pdfLink = compNfse.Nfse.OutrasInformacoes;
 
       const updateData = {
@@ -150,13 +148,12 @@ async function emitirNotaFiscal(saleId, clientId) {
         verification_code: nfse.CodigoVerificacao,
         issue_date: nfse.DataEmissao,
         rps_number: rpsNumber,
-        nfs_link_pdf: pdfLink, // Salva o link no objeto de atualização
+        nfs_link_pdf: pdfLink,
         error_message: null
       };
       
       await supabase.from('sales').update(updateData).eq('id', saleId);
       
-      // Retorna os dados completos para o frontend
       return { success: true, ...updateData };
 
     } else if (responseData.ListaMensagemRetorno) {
@@ -172,5 +169,3 @@ async function emitirNotaFiscal(saleId, clientId) {
     throw error;
   }
 }
-
-module.exports = { emitirNotaFiscal };
