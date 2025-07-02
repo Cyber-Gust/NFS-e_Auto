@@ -1,23 +1,19 @@
-// Arquivo: /api/_utils/nfseService.js
+// Arquivo: services/nfseservice.js (VERSÃO CORRIGIDA E FINAL)
 
-// Para a Vercel, usamos o 'import' moderno
-import soap from 'node-soap';
-import { createClient } from '@supabase/supabase-js';
-import { SignedXml } from 'xml-crypto';
-import forge from 'node-forge';
+const soap = require('node-soap');
+const { createClient } = require('@supabase/supabase-js');
+const { SignedXml } = require('xml-crypto');
+const forge = require('node-forge');
 
-// Inicializa o cliente Supabase para o backend
-// A Vercel injeta as variáveis de ambiente a partir das configurações do projeto
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-// Função auxiliar para assinar o XML com o certificado
 function signXml(xml, tag) {
   try {
     const pfxBase64 = process.env.CERTIFICATE_BASE64;
     const password = process.env.CERTIFICATE_PASSWORD;
 
     if (!pfxBase64 || !password) {
-      throw new Error("Certificado ou senha não configurados nas variáveis de ambiente.");
+      throw new Error("Certificado ou senha não configurados no .env");
     }
 
     const pfxBuffer = Buffer.from(pfxBase64, 'base64');
@@ -45,8 +41,7 @@ function signXml(xml, tag) {
   }
 }
 
-// Função principal de emissão, agora exportada como ESM
-export async function emitirNotaFiscal(saleId, clientId) {
+async function emitirNotaFiscal(saleId, clientId) {
   await supabase.from('sales').update({ status: 'Processando' }).eq('id', saleId);
 
   try {
@@ -143,6 +138,10 @@ export async function emitirNotaFiscal(saleId, clientId) {
     if (responseData.ListaNfse) {
       const compNfse = responseData.ListaNfse.CompNfse;
       const nfse = compNfse.Nfse.InfNfse;
+
+      // <<< IMPLEMENTAÇÃO CHAVE AQUI >>>
+      // Captura o link do PDF da resposta da prefeitura.
+      // O provedor NF-iss geralmente coloca o link na tag "OutrasInformacoes".
       const pdfLink = compNfse.Nfse.OutrasInformacoes;
 
       const updateData = {
@@ -151,12 +150,13 @@ export async function emitirNotaFiscal(saleId, clientId) {
         verification_code: nfse.CodigoVerificacao,
         issue_date: nfse.DataEmissao,
         rps_number: rpsNumber,
-        nfs_link_pdf: pdfLink,
+        nfs_link_pdf: pdfLink, // Salva o link no objeto de atualização
         error_message: null
       };
       
       await supabase.from('sales').update(updateData).eq('id', saleId);
       
+      // Retorna os dados completos para o frontend
       return { success: true, ...updateData };
 
     } else if (responseData.ListaMensagemRetorno) {
@@ -172,3 +172,5 @@ export async function emitirNotaFiscal(saleId, clientId) {
     throw error;
   }
 }
+
+module.exports = { emitirNotaFiscal };
