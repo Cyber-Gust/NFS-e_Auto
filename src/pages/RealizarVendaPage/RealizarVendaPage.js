@@ -4,7 +4,7 @@ import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import ClientForm from '../../components/ClientForm/ClientForm';
-import InvoiceViewer from '../../components/InvoiceViewer/InvoiceViewer'; // <<< NOVA IMPORTAÇÃO
+import InvoiceViewer from '../../components/InvoiceViewer/InvoiceViewer';
 import '../../components/ClientForm/ClientForm.css';
 import './RealizarVendaPage.css';
 
@@ -22,6 +22,7 @@ const servicosOptions = [
   { value: 'Insulfilm', label: 'Insulfilm' }
 ];
 
+// <<< CORREÇÃO: Declarando o estado inicial fora do componente >>>
 const initialFormState = {
     client_id: '',
     service_description: [], 
@@ -35,9 +36,9 @@ export default function RealizarVendaPage() {
     const { user } = useAuth();
     const [clients, setClients] = useState([]);
     const [showClientModal, setShowClientModal] = useState(false);
-    const [formData, setFormData] = useState(initialFormState);
+    const [formData, setFormData] = useState(initialFormState); // <<< CORREÇÃO: Usando a constante
     const [loading, setLoading] = useState(false);
-    const [invoiceResult, setInvoiceResult] = useState(null); // <<< NOVO ESTADO PARA O RESULTADO
+    const [invoiceResult, setInvoiceResult] = useState(null); // <<< CORREÇÃO: Declarando o estado
 
     async function fetchClients() {
         const { data } = await supabase.from('clients').select('id, name').order('name');
@@ -69,14 +70,24 @@ export default function RealizarVendaPage() {
             return;
         }
         setLoading(true);
+        setInvoiceResult(null); // <<< CORREÇÃO: Usando a função de estado
         try {
             const descriptionString = formData.service_description.map(option => option.label).join(', ');
-            const dataToSave = { /* ...seus dados do formulário... */ };
+
+            const dataToSave = {
+                client_id: formData.client_id,
+                service_description: descriptionString,
+                value: formData.value,
+                payment_method: formData.payment_method,
+                installments: formData.installments,
+                observations: formData.observations
+            };
 
             const { data: sale, error } = await supabase
                 .from('sales')
-                .insert({ /* ...dados da venda... */ })
-                .select().single();
+                .insert({ ...dataToSave, user_id: user.id, status: 'Pendente' })
+                .select()
+                .single();
             if (error) throw error;
             
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
@@ -85,13 +96,15 @@ export default function RealizarVendaPage() {
                 clientId: sale.client_id,
             });
 
-            // <<< LÓGICA ATUALIZADA >>>
-            // Em vez de 'alert', guardamos o resultado para mostrar no modal
-            setInvoiceResult(response.data.data);
-            setFormData(initialFormState); // Limpa o formulário
-
+            if (response.data && response.data.success) {
+                setInvoiceResult(response.data.data); // <<< CORREÇÃO: Usando a função de estado
+            } else {
+                throw new Error(response.data.error || 'Ocorreu um erro na emissão.');
+            }
+            
+            setFormData(initialFormState); // <<< CORREÇÃO: Usando a constante
         } catch(error) {
-            alert(`Erro ao emitir a nota: ${error.message}`);
+            alert(`Erro: ${error.response?.data?.error || error.message}`);
         } finally {
             setLoading(false);
         }
@@ -104,7 +117,6 @@ export default function RealizarVendaPage() {
             </div>
             <div className="page-card">
                 <form onSubmit={handleSubmit} className="client-form sale-form">
-                    {/* ...seu formulário continua igual aqui... */}
                     <label>Cliente</label>
                     <div className="client-selector-group">
                         <select name="client_id" value={formData.client_id} onChange={handleChange} required>
@@ -115,9 +127,37 @@ export default function RealizarVendaPage() {
                     </div>
 
                     <label>Serviços Realizados</label>
-                    <Select isMulti name="service_description" options={servicosOptions} /* ...outras props... */ />
+                    <Select
+                        isMulti
+                        name="service_description"
+                        options={servicosOptions}
+                        className="basic-multi-select"
+                        classNamePrefix="select"
+                        placeholder="Selecione os serviços..."
+                        value={formData.service_description}
+                        onChange={handleMultiSelectChange}
+                    />
                     
-                    {/* ...resto dos campos do formulário... */}
+                    <label>Valor (R$)</label>
+                    <input type="number" step="0.01" name="value" value={formData.value} onChange={handleChange} required />
+                    
+                    <label>Forma de Pagamento</label>
+                    <select name="payment_method" value={formData.payment_method} onChange={handleChange} required>
+                        <option value="" disabled>Selecione</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    </select>
+
+                    <label>Observações</label>
+                    <textarea 
+                        name="observations" 
+                        value={formData.observations} 
+                        onChange={handleChange} 
+                        placeholder="Detalhes adicionais, placa do carro, etc..."
+                        rows="3"
+                    />
 
                     <div className="form-actions">
                         <button type="submit" className="page-button-primary" disabled={loading}>
@@ -129,7 +169,6 @@ export default function RealizarVendaPage() {
             
             {showClientModal && <ClientForm onClose={() => setShowClientModal(false)} onClientCreated={handleClientCreated} />}
 
-            {/* <<< NOVO >>> Renderiza o modal com o resultado da nota */}
             {invoiceResult && (
                 <InvoiceViewer 
                     result={invoiceResult} 
