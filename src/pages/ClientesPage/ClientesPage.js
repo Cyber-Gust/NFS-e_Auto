@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // ALTERAÇÃO 1: Importar os ícones que vamos usar
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaUserPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import './ClientesPage.css';
