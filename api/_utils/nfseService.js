@@ -75,10 +75,19 @@ function signXml(xml, tag) {
     const sig = new SignedXml();
     sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
+    sig.digestAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256"; // Definir explicitamente
 
     // Logs para depuração
     console.log("Tag usada no addReference:", tag);
-    console.log("XML antes da assinatura:", xml);
+    console.log("XML antes da assinatura (limpo):", xml.trim());
+    console.log("Configuração do SignedXml:", {
+      signatureAlgorithm: sig.signatureAlgorithm,
+      canonicalizationAlgorithm: sig.canonicalizationAlgorithm,
+      digestAlgorithm: sig.digestAlgorithm
+    });
+
+    // Limpar o XML de espaços em branco extras
+    const cleanedXml = xml.trim();
 
     sig.addReference(
       `//*[local-name(.)='${tag}']`,
@@ -93,15 +102,16 @@ function signXml(xml, tag) {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
     };
 
-    sig.computeSignature(xml);
+    sig.computeSignature(cleanedXml);
     const signedXml = sig.getSignedXml();
     console.log("XML assinado:", signedXml);
 
     return signedXml;
   } catch (err) {
-    console.error("Erro ao assinar o XML: ", err);
+    console.error("Erro ao assinar o XML:", err);
     throw new Error("Falha na assinatura digital. Verifique o certificado e a senha.");
   }
+  
 }
 
 export async function emitirNotaFiscal(saleId, clientId) {
