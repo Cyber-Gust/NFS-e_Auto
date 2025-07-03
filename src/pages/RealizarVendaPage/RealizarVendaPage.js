@@ -22,7 +22,6 @@ const servicosOptions = [
   { value: 'Insulfilm', label: 'Insulfilm' }
 ];
 
-// <<< CORREÇÃO: Declarando o estado inicial fora do componente >>>
 const initialFormState = {
     client_id: '',
     service_description: [], 
@@ -36,9 +35,9 @@ export default function RealizarVendaPage() {
     const { user } = useAuth();
     const [clients, setClients] = useState([]);
     const [showClientModal, setShowClientModal] = useState(false);
-    const [formData, setFormData] = useState(initialFormState); // <<< CORREÇÃO: Usando a constante
+    const [formData, setFormData] = useState(initialFormState);
     const [loading, setLoading] = useState(false);
-    const [invoiceResult, setInvoiceResult] = useState(null); // <<< CORREÇÃO: Declarando o estado
+    const [invoiceResult, setInvoiceResult] = useState(null);
 
     async function fetchClients() {
         const { data } = await supabase.from('clients').select('id, name').order('name');
@@ -70,7 +69,7 @@ export default function RealizarVendaPage() {
             return;
         }
         setLoading(true);
-        setInvoiceResult(null); // <<< CORREÇÃO: Usando a função de estado
+        setInvoiceResult(null);
         try {
             const descriptionString = formData.service_description.map(option => option.label).join(', ');
 
@@ -96,12 +95,12 @@ export default function RealizarVendaPage() {
             });
 
             if (response.data && response.data.success) {
-                setInvoiceResult(response.data.data); // <<< CORREÇÃO: Usando a função de estado
+                setInvoiceResult(response.data.data);
             } else {
                 throw new Error(response.data.error || 'Ocorreu um erro na emissão.');
             }
             
-            setFormData(initialFormState); // <<< CORREÇÃO: Usando a constante
+            setFormData(initialFormState);
         } catch(error) {
             alert(`Erro: ${error.response?.data?.error || error.message}`);
         } finally {
