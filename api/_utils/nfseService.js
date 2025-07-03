@@ -1,4 +1,4 @@
-import soap from 'node-soap';
+import soap from 'soap';
 import { createClient } from '@supabase/supabase-js';
 import { SignedXml } from 'xml-crypto';
 import * as forge from 'node-forge';
