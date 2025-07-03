@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // ALTERAÇÃO 1: Importar os ícones que vamos usar
-import { FaUserPlus, FaEdit, FaTrash, FaTrashAlt } from 'react-icons/fa';
-import { supabase } from '../../supabaseClient';
-import { useAuth } from '../../contexts/AuthContext';
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { supabase } from '../../supabaseClient.js';
 import './ClientesPage.css';
-import ClientForm from '../../components/ClientForm/ClientForm';
+import ClientForm from '../../components/ClientForm/ClientForm.js';
 
 export default function ClientesPage() {
   const [clients, setClients] = useState([]);

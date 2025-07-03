@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { supabase } from './supabaseClient';
-import { AuthProvider } from './contexts/AuthContext';
+import { supabase } from './supabaseClient.js';
+import { AuthProvider } from './contexts/AuthContext.js';
 
 // Importando as páginas
-import LoginPage from './pages/LoginPage/LoginPage';
-import SignUpPage from './pages/SignUpPage/SignUpPage';
-import DashboardLayout from './components/DashboardLayout/DashboardLayout';
-import ClientesPage from './pages/ClientesPage/ClientesPage';
-import RealizarVendaPage from './pages/RealizarVendaPage/RealizarVendaPage';
-import RelatoriosPage from './pages/RelatoriosPage/RelatoriosPage';
+import LoginPage from './pages/LoginPage/LoginPage.js';
+import SignUpPage from './pages/SignUpPage/SignUpPage.js';
+import DashboardLayout from './components/DashboardLayout/DashboardLayout.js';
+import ClientesPage from './pages/ClientesPage/ClientesPage.js';
+import RealizarVendaPage from './pages/RealizarVendaPage/RealizarVendaPage.js';
+import RelatoriosPage from './pages/RelatoriosPage/RelatoriosPage.js';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {

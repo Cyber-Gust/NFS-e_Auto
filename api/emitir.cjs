@@ -1,7 +1,8 @@
-import { emitirNotaFiscal } from './_utils/nfseService.js';
+// Usamos 'require' para importar a nossa lógica
+const { emitirNotaFiscal } = require('./_utils/nfseService.cjs');
 
-// Esta é a função que a Vercel irá executar
-export default async function handler(req, res) {
+// Usamos 'module.exports' para exportar a função handler
+module.exports = async (req, res) => {
   // Permite que seu frontend na Vercel chame esta API
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -32,4 +33,4 @@ export default async function handler(req, res) {
     // Envia a resposta de erro de volta para o frontend
     return res.status(500).json({ success: false, error: error.message });
   }
-}
+};

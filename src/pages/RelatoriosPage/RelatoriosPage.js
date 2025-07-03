@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../supabaseClient.js';
 import './RelatoriosPage.css';
 
 export default function RelatoriosPage() {

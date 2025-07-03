@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { supabase } from '../../supabaseClient';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../supabaseClient.js';
+import { useAuth } from '../../contexts/AuthContext.js';
 import axios from 'axios';
-import ClientForm from '../../components/ClientForm/ClientForm';
-import InvoiceViewer from '../../components/InvoiceViewer/InvoiceViewer';
+import ClientForm from '../../components/ClientForm/ClientForm.js';
+import InvoiceViewer from '../../components/InvoiceViewer/InvoiceViewer.js';
 import '../../components/ClientForm/ClientForm.css';
 import './RealizarVendaPage.css';
 

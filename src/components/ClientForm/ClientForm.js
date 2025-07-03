@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../supabaseClient';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../supabaseClient.js';
+import { useAuth } from '../../contexts/AuthContext.js';
 import './ClientForm.css';
 
 export default function ClientForm({ client, onClose, onClientCreated }) {

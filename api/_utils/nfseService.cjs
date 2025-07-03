@@ -1,7 +1,8 @@
-import soap from 'node-soap';
-import { createClient } from '@supabase/supabase-js';
-import { SignedXml } from 'xml-crypto';
-import * as forge from 'node-forge';
+// Usamos 'require' para todas as dependências do backend
+const soap = require('node-soap');
+const { createClient } = require('@supabase/supabase-js');
+const { SignedXml } = require('xml-crypto');
+const forge = require('node-forge');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -10,114 +11,61 @@ function signXml(xml, tag) {
     const pfxBase64 = process.env.CERTIFICATE_BASE64;
     const password = process.env.CERTIFICATE_PASSWORD;
 
-    // Validações das variáveis de ambiente
-    if (!pfxBase64) {
-      throw new Error("Variável de ambiente CERTIFICATE_BASE64 não está definida no Vercel.");
-    }
-    if (!password) {
-      throw new Error("Variável de ambiente CERTIFICATE_PASSWORD não está definida no Vercel.");
+    if (!pfxBase64 || !password) {
+      throw new Error("Certificado ou senha não configurados nas variáveis de ambiente.");
     }
 
-    // Log para verificar o início do processo de assinatura
-    console.log("Iniciando assinatura XML. Tag:", tag);
-    console.log("Tamanho do CERTIFICATE_BASE64:", pfxBase64.length);
-    console.log("CERTIFICATE_PASSWORD definida:", !!password);
+    const pfxBuffer = Buffer.from(pfxBase64, 'base64');
+    const p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
+    const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
 
-    // Conversão do Base64 para buffer
-    let pfxBuffer;
-    try {
-      pfxBuffer = Buffer.from(pfxBase64, 'base64');
-    } catch (err) {
-      console.error("Erro ao decodificar CERTIFICATE_BASE64:", err);
-      throw new Error("Falha ao decodificar o certificado Base64. Verifique se o conteúdo está correto.");
-    }
-
-    // Conversão do buffer para ASN.1
-    let p12Asn1;
-    try {
-      p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
-    } catch (err) {
-      console.error("Erro ao converter buffer para ASN.1:", err);
-      throw new Error("Formato inválido do arquivo PFX. Verifique se o certificado está correto.");
-    }
-
-    // Extração do PFX com a senha
-    let p12;
-    try {
-      p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
-    } catch (err) {
-      console.error("Erro ao processar PFX com a senha:", err);
-      throw new Error("Falha ao processar o arquivo PFX. Verifique se a senha está correta.");
-    }
-
-    // Extração da chave privada e certificado
     let privateKey;
     let certificate;
+
     p12.safeContents.forEach(safeContents => {
-      safeContents.safeBags.forEach(bag => {
-        if (bag.type === forge.pki.oids.pkcs8ShroudedKeyBag) {
-          privateKey = bag.key;
-        } else if (bag.type === forge.pki.oids.certBag) {
-          certificate = bag.cert;
-        }
-      });
+        safeContents.safeBags.forEach(bag => {
+            if (bag.type === forge.pki.oids.pkcs8ShroudedKeyBag) {
+                privateKey = bag.key;
+            } else if (bag.type === forge.pki.oids.certBag) {
+                certificate = bag.cert;
+            }
+        });
     });
 
     if (!privateKey || !certificate) {
-      throw new Error("Chave privada ou certificado não encontrados dentro do arquivo PFX. Verifique se o arquivo ou a senha estão corretos.");
+        throw new Error("Chave privada ou certificado não encontrados dentro do arquivo PFX. Verifique se o arquivo ou a senha estão corretos.");
     }
-
+    
     const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
     const certPem = forge.pki.certificateToPem(certificate);
     const certClean = certPem.replace(/-----(BEGIN|END) CERTIFICATE-----/g, '').replace(/\s/g, '');
-
-    // Configuração da assinatura XML
+    
     const sig = new SignedXml();
     sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
-    sig.digestAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
-
-    // Logs para depuração
-    console.log("Tag usada no addReference:", tag);
-    console.log("XML antes da assinatura (limpo):", xml.trim());
-    console.log("Configuração do SignedXml:", {
-      signatureAlgorithm: sig.signatureAlgorithm,
-      canonicalizationAlgorithm: sig.canonicalizationAlgorithm,
-      digestAlgorithm: sig.digestAlgorithm
-    });
-
-    // Limpar o XML de espaços em branco extras
-    const cleanedXml = xml.trim();
-
-    // Usar objeto de configuração para addReference
-    sig.addReference({
-      xpath: `//*[local-name(.)='${tag}']`,
-      transforms: [
+    
+    sig.addReference(
+      `//*[local-name(.)='${tag}']`,
+      [
         "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
         "http://www.w3.org/2001/10/xml-exc-c14n#"
       ],
-      digestAlgorithm: "http://www.w3.org/2001/04/xmlenc#sha256"
-    });
-
+      "http://www.w3.org/2001/04/xmlenc#sha256"
+    );
     sig.signingKey = privateKeyPem;
     sig.keyInfoProvider = {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
     };
-
-    console.log("Iniciando computeSignature...");
-    sig.computeSignature(cleanedXml);
-    const signedXml = sig.getSignedXml();
-    console.log("XML assinado:", signedXml);
-
-    return signedXml;
+    
+    sig.computeSignature(xml);
+    return sig.getSignedXml();
   } catch (err) {
-    console.error("Erro ao assinar o XML:", err);
+    console.error("Erro ao assinar o XML: ", err);
     throw new Error("Falha na assinatura digital. Verifique o certificado e a senha.");
   }
 }
 
-export async function emitirNotaFiscal(saleId, clientId) {
-  console.log("Iniciando emitirNotaFiscal com saleId:", saleId, "clientId:", clientId);
+async function emitirNotaFiscal(saleId, clientId) {
   await supabase.from('sales').update({ status: 'Processando' }).eq('id', saleId);
 
   try {
@@ -199,7 +147,6 @@ export async function emitirNotaFiscal(saleId, clientId) {
         </Rps>
       </GerarNfseEnvio>`;
       
-    console.log("XML gerado antes da assinatura:", xmlRps);
     const signedXml = signXml(xmlRps, 'InfDeclaracaoPrestacaoServico');
     
     const url = `https://saojoaodelrei.nfiss.com.br/?WSDL`;
@@ -208,9 +155,7 @@ export async function emitirNotaFiscal(saleId, clientId) {
     const soapHeader = `<nfseCabecMsg xmlns="http://www.abrasf.org.br/nfse.xsd"><cabecalho versao="2.02"><versaoDados>2.02</versaoDados></cabecalho></nfseCabecMsg>`;
     soapClient.addSoapHeader(soapHeader);
     
-    console.log("Enviando requisição ao WebService...");
     const result = await soapClient.GerarNfseAsync({ nfseDadosMsg: signedXml });
-    console.log("Resposta do WebService:", JSON.stringify(result, null, 2));
 
     const responseData = result[0];
     
@@ -242,8 +187,10 @@ export async function emitirNotaFiscal(saleId, clientId) {
     }
     
   } catch (error) {
-    console.error("Erro em emitirNotaFiscal:", error);
     await supabase.from('sales').update({ status: 'Erro', error_message: error.message }).eq('id', saleId);
     throw error;
   }
 }
+
+// Exporta a função para ser usada pelo 'emitir.cjs'
+module.exports = { emitirNotaFiscal };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../supabaseClient.js';
 import './DashboardLayout.css';
 
 const MenuIcon = () => (
