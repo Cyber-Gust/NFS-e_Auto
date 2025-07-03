@@ -1,10 +1,9 @@
-// Arquivo: /api/_utils/nfseService.js
+// Arquivo: /api/_utils/nfseService.js (VERSÃO MAIS ROBUSTA)
 
 import soap from 'node-soap';
 import { createClient } from '@supabase/supabase-js';
 import { SignedXml } from 'xml-crypto';
-// <<< A CORREÇÃO ESTÁ NESTA LINHA >>>
-import * as forge from 'node-forge'; // Alterado de 'import forge' para 'import * as forge'
+import * as forge from 'node-forge';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -21,17 +20,32 @@ function signXml(xml, tag) {
     const p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
     const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
 
-    // Esta é a parte que estava a falhar antes e que agora deve funcionar
-    const privateKeyObj = p12.getBags({ bagType: forge.pki.Bag.PKCS8_SHROUDED_KEY_BAG })[forge.pki.Bag.PKCS8_SHROUDED_KEY_BAG][0];
-    const privateKey = forge.pki.privateKeyToPem(privateKeyObj.key);
+    // <<< MÉTODO DE LEITURA ATUALIZADO E MAIS ROBUSTO >>>
+    let privateKey;
+    let certificate;
 
-    const certBags = p12.getBags({ bagType: forge.pki.Bag.CERTIFICATE_BAG })[forge.pki.Bag.CERTIFICATE_BAG];
-    const cert = forge.pki.certificateToPem(certBags[0].cert);
-    const certClean = cert.replace(/-----(BEGIN|END) CERTIFICATE-----/g, '').replace(/\s/g, '');
+    // Itera pelos "bags" (pacotes) dentro do arquivo PFX para encontrar a chave e o certificado
+    p12.safeContents.forEach(safeContents => {
+        safeContents.safeBags.forEach(bag => {
+            if (bag.type === forge.pki.oids.pkcs8ShroudedKeyBag) {
+                privateKey = bag.key;
+            } else if (bag.type === forge.pki.oids.certBag) {
+                certificate = bag.cert;
+            }
+        });
+    });
+
+    if (!privateKey || !certificate) {
+        throw new Error("Chave privada ou certificado não encontrados dentro do arquivo PFX. Verifique se o arquivo ou a senha estão corretos.");
+    }
+    
+    const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
+    const certPem = forge.pki.certificateToPem(certificate);
+    const certClean = certPem.replace(/-----(BEGIN|END) CERTIFICATE-----/g, '').replace(/\s/g, '');
     
     const sig = new SignedXml();
     sig.addReference(`//*[local-name(.)='${tag}']`, ["http://www.w3.org/2000/09/xmldsig#enveloped-signature", "http://www.w3.org/2001/10/xml-exc-c14n#"], "http://www.w3.org/2001/04/xmlenc#sha256");
-    sig.signingKey = privateKey;
+    sig.signingKey = privateKeyPem;
     sig.keyInfoProvider = {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
     };
