@@ -13,7 +13,7 @@
     "react-router-dom": "^6.21.1",
     "react-scripts": "^5.0.1",
     "react-select": "^5.10.1",
-    "xml-crypto": "^6.1.2"
+    "xml-crypto": "^2.1.6"
   },
   "scripts": {
     "start": "react-scripts start",
