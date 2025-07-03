@@ -60,10 +60,15 @@ function signXml(xml, tag) {
     sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
     
     sig.addReference(
-      `//*[local-name(.)='${tag}']`,
-      ["http://www.w3.org/2000/09/xmldsig#enveloped-signature", "http://www.w3.org/2001/10/xml-exc-c14n#"],
-      "http://www.w3.org/2001/04/xmlenc#sha256"
-    );
+  `//*[local-name(.)='${tag}']`,
+  [
+    "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+    "http://www.w3.org/2001/10/xml-exc-c14n#"
+  ],
+  {
+    digestAlgorithm: "http://www.w3.org/2001/04/xmlenc#sha256"
+  }
+);
     sig.signingKey = privateKeyPem;
     sig.keyInfoProvider = {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
