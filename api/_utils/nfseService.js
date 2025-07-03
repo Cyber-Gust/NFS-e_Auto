@@ -5,6 +5,15 @@ import * as forge from 'node-forge';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+javascript
+
+Recolher
+
+Encapsular
+
+Executar
+
+Copiar
 function signXml(xml, tag) {
   try {
     const pfxBase64 = process.env.CERTIFICATE_BASE64;
@@ -75,7 +84,7 @@ function signXml(xml, tag) {
     const sig = new SignedXml();
     sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
-    sig.digestAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256"; // Definir explicitamente
+    sig.digestAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
 
     // Logs para depuração
     console.log("Tag usada no addReference:", tag);
@@ -89,19 +98,22 @@ function signXml(xml, tag) {
     // Limpar o XML de espaços em branco extras
     const cleanedXml = xml.trim();
 
-    sig.addReference(
-      `//*[local-name(.)='${tag}']`,
-      [
+    // Usar objeto de configuração para addReference
+    sig.addReference({
+      xpath: `//*[local-name(.)='${tag}']`,
+      transforms: [
         "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
         "http://www.w3.org/2001/10/xml-exc-c14n#"
       ],
-      "http://www.w3.org/2001/04/xmlenc#sha256"
-    );
+      digestAlgorithm: "http://www.w3.org/2001/04/xmlenc#sha256"
+    });
+
     sig.signingKey = privateKeyPem;
     sig.keyInfoProvider = {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
     };
 
+    console.log("Iniciando computeSignature...");
     sig.computeSignature(cleanedXml);
     const signedXml = sig.getSignedXml();
     console.log("XML assinado:", signedXml);
@@ -111,7 +123,6 @@ function signXml(xml, tag) {
     console.error("Erro ao assinar o XML:", err);
     throw new Error("Falha na assinatura digital. Verifique o certificado e a senha.");
   }
-  
 }
 
 export async function emitirNotaFiscal(saleId, clientId) {
