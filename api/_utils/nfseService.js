@@ -1,7 +1,7 @@
-const soap = require('node-soap');
-const { createClient } = require('@supabase/supabase-js');
-const { SignedXml } = require('xml-crypto');
-const forge = require('node-forge');
+import soap from 'node-soap';
+import { createClient } from '@supabase/supabase-js';
+import { SignedXml } from 'xml-crypto';
+import * as forge from 'node-forge';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -117,6 +117,7 @@ function signXml(xml, tag) {
 }
 
 export async function emitirNotaFiscal(saleId, clientId) {
+  console.log("Iniciando emitirNotaFiscal com saleId:", saleId, "clientId:", clientId);
   await supabase.from('sales').update({ status: 'Processando' }).eq('id', saleId);
 
   try {
@@ -241,6 +242,7 @@ export async function emitirNotaFiscal(saleId, clientId) {
     }
     
   } catch (error) {
+    console.error("Erro em emitirNotaFiscal:", error);
     await supabase.from('sales').update({ status: 'Erro', error_message: error.message }).eq('id', saleId);
     throw error;
   }
