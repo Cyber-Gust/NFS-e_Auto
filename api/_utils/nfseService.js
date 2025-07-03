@@ -1,7 +1,7 @@
-import soap from 'node-soap';
-import { createClient } from '@supabase/supabase-js';
-import { SignedXml } from 'xml-crypto';
-import * as forge from 'node-forge';
+const soap = require('node-soap');
+const { createClient } = require('@supabase/supabase-js');
+const { SignedXml } = require('xml-crypto');
+const forge = require('node-forge');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
