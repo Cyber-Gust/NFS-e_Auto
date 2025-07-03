@@ -5,15 +5,6 @@ import * as forge from 'node-forge';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-javascript
-
-Recolher
-
-Encapsular
-
-Executar
-
-Copiar
 function signXml(xml, tag) {
   try {
     const pfxBase64 = process.env.CERTIFICATE_BASE64;
@@ -216,7 +207,9 @@ export async function emitirNotaFiscal(saleId, clientId) {
     const soapHeader = `<nfseCabecMsg xmlns="http://www.abrasf.org.br/nfse.xsd"><cabecalho versao="2.02"><versaoDados>2.02</versaoDados></cabecalho></nfseCabecMsg>`;
     soapClient.addSoapHeader(soapHeader);
     
+    console.log("Enviando requisição ao WebService...");
     const result = await soapClient.GerarNfseAsync({ nfseDadosMsg: signedXml });
+    console.log("Resposta do WebService:", JSON.stringify(result, null, 2));
 
     const responseData = result[0];
     
