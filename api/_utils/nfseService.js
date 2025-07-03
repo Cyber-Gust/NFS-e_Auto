@@ -1,5 +1,3 @@
-// Arquivo: /api/_utils/nfseService.js (VERSÃO MAIS ROBUSTA)
-
 import soap from 'node-soap';
 import { createClient } from '@supabase/supabase-js';
 import { SignedXml } from 'xml-crypto';
@@ -12,45 +10,94 @@ function signXml(xml, tag) {
     const pfxBase64 = process.env.CERTIFICATE_BASE64;
     const password = process.env.CERTIFICATE_PASSWORD;
 
-    if (!pfxBase64 || !password) {
-      throw new Error("Certificado ou senha não configurados nas variáveis de ambiente.");
+    // Validações das variáveis de ambiente
+    if (!pfxBase64) {
+      throw new Error("Variável de ambiente CERTIFICATE_BASE64 não está definida no Vercel.");
+    }
+    if (!password) {
+      throw new Error("Variável de ambiente CERTIFICATE_PASSWORD não está definida no Vercel.");
     }
 
-    const pfxBuffer = Buffer.from(pfxBase64, 'base64');
-    const p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
-    const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
+    // Log para verificar o início do processo de assinatura
+    console.log("Iniciando assinatura XML. Tag:", tag);
+    console.log("Tamanho do CERTIFICATE_BASE64:", pfxBase64.length);
+    console.log("CERTIFICATE_PASSWORD definida:", !!password);
 
-    // <<< MÉTODO DE LEITURA ATUALIZADO E MAIS ROBUSTO >>>
+    // Conversão do Base64 para buffer
+    let pfxBuffer;
+    try {
+      pfxBuffer = Buffer.from(pfxBase64, 'base64');
+    } catch (err) {
+      console.error("Erro ao decodificar CERTIFICATE_BASE64:", err);
+      throw new Error("Falha ao decodificar o certificado Base64. Verifique se o conteúdo está correto.");
+    }
+
+    // Conversão do buffer para ASN.1
+    let p12Asn1;
+    try {
+      p12Asn1 = forge.asn1.fromDer(pfxBuffer.toString('binary'));
+    } catch (err) {
+      console.error("Erro ao converter buffer para ASN.1:", err);
+      throw new Error("Formato inválido do arquivo PFX. Verifique se o certificado está correto.");
+    }
+
+    // Extração do PFX com a senha
+    let p12;
+    try {
+      p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
+    } catch (err) {
+      console.error("Erro ao processar PFX com a senha:", err);
+      throw new Error("Falha ao processar o arquivo PFX. Verifique se a senha está correta.");
+    }
+
+    // Extração da chave privada e certificado
     let privateKey;
     let certificate;
-
-    // Itera pelos "bags" (pacotes) dentro do arquivo PFX para encontrar a chave e o certificado
     p12.safeContents.forEach(safeContents => {
-        safeContents.safeBags.forEach(bag => {
-            if (bag.type === forge.pki.oids.pkcs8ShroudedKeyBag) {
-                privateKey = bag.key;
-            } else if (bag.type === forge.pki.oids.certBag) {
-                certificate = bag.cert;
-            }
-        });
+      safeContents.safeBags.forEach(bag => {
+        if (bag.type === forge.pki.oids.pkcs8ShroudedKeyBag) {
+          privateKey = bag.key;
+        } else if (bag.type === forge.pki.oids.certBag) {
+          certificate = bag.cert;
+        }
+      });
     });
 
     if (!privateKey || !certificate) {
-        throw new Error("Chave privada ou certificado não encontrados dentro do arquivo PFX. Verifique se o arquivo ou a senha estão corretos.");
+      throw new Error("Chave privada ou certificado não encontrados dentro do arquivo PFX. Verifique se o arquivo ou a senha estão corretos.");
     }
-    
+
     const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
     const certPem = forge.pki.certificateToPem(certificate);
     const certClean = certPem.replace(/-----(BEGIN|END) CERTIFICATE-----/g, '').replace(/\s/g, '');
-    
+
+    // Configuração da assinatura XML
     const sig = new SignedXml();
-    sig.addReference(`//*[local-name(.)='${tag}']`, ["http://www.w3.org/2000/09/xmldsig#enveloped-signature", "http://www.w3.org/2001/10/xml-exc-c14n#"], "http://www.w3.org/2001/04/xmlenc#sha256");
+    sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
+
+    // Logs para depuração
+    console.log("Tag usada no addReference:", tag);
+    console.log("XML antes da assinatura:", xml);
+
+    sig.addReference(
+      `//*[local-name(.)='${tag}']`,
+      [
+        "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+        "http://www.w3.org/2001/10/xml-exc-c14n#"
+      ],
+      "http://www.w3.org/2001/04/xmlenc#sha256"
+    );
     sig.signingKey = privateKeyPem;
     sig.keyInfoProvider = {
       getKeyInfo: () => `<X509Data><X509Certificate>${certClean}</X509Certificate></X509Data>`
     };
+
     sig.computeSignature(xml);
-    return sig.getSignedXml();
+    const signedXml = sig.getSignedXml();
+    console.log("XML assinado:", signedXml);
+
+    return signedXml;
   } catch (err) {
     console.error("Erro ao assinar o XML: ", err);
     throw new Error("Falha na assinatura digital. Verifique o certificado e a senha.");
@@ -139,6 +186,7 @@ export async function emitirNotaFiscal(saleId, clientId) {
         </Rps>
       </GerarNfseEnvio>`;
       
+    console.log("XML gerado antes da assinatura:", xmlRps);
     const signedXml = signXml(xmlRps, 'InfDeclaracaoPrestacaoServico');
     
     const url = `https://saojoaodelrei.nfiss.com.br/?WSDL`;
