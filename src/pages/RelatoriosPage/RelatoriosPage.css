@@ -7,6 +7,13 @@
     text-transform: capitalize;
 }
 
+.status-badge{
+    color:#005fdd;
+    font-weight: 900;
+}
+
+
+
 .status-emitida { background-color: var(--status-green); }
 .status-pendente { background-color: var(--status-gray); }
 .status-processando { background-color: var(--status-yellow); color: var(--text-dark); }
