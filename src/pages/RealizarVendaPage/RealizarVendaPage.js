@@ -89,10 +89,10 @@ export default function RealizarVendaPage() {
                 .single();
             if (error) throw error;
             
-            const response = await axios.post('/api/emitir', {
-                saleId: sale.id,
+            const response = await axios.post('https://nfse-backend.glitch.me', {
+             saleId: sale.id,
                 clientId: sale.client_id,
-            });
+             });
 
             if (response.data && response.data.success) {
                 setInvoiceResult(response.data.data);
