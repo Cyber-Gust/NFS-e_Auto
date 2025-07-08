@@ -31,6 +31,10 @@ const initialFormState = {
     observations: ''
 };
 
+const CLOUDFLARE_WORKER_URL = process.env.REACT_APP_CLOUDFLARE_WORKER_URL;
+const WORKER_AUTH_TOKEN = process.env.REACT_APP_WORKER_AUTH_TOKEN;
+
+
 export default function RealizarVendaPage() {
     const { user } = useAuth();
     const [clients, setClients] = useState([]);
@@ -89,10 +93,19 @@ export default function RealizarVendaPage() {
                 .single();
             if (error) throw error;
             
-            const response = await axios.post('https://nfse-backend.glitch.me/api/emitir', {
-             saleId: sale.id,
+            // --- MUDANÇA AQUI: Chamar o Cloudflare Worker diretamente ---
+            if (!CLOUDFLARE_WORKER_URL || !WORKER_AUTH_TOKEN) {
+                throw new Error("As variáveis de ambiente para o Cloudflare Worker não estão configuradas no frontend.");
+            }
+
+            const response = await axios.post(CLOUDFLARE_WORKER_URL, {
+                saleId: sale.id,
                 clientId: sale.client_id,
-             });
+            }, {
+                headers: {
+                    'X-Worker-Auth': WORKER_AUTH_TOKEN // Envia a chave de autenticação para o Worker
+                }
+            });
 
             if (response.data && response.data.success) {
                 setInvoiceResult(response.data.data);
