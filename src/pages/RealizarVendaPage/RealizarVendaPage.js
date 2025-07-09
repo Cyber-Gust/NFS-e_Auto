@@ -31,8 +31,11 @@ const initialFormState = {
     observations: ''
 };
 
-const CLOUDFLARE_WORKER_URL = process.env.REACT_APP_CLOUDFLARE_WORKER_URL;
-const WORKER_AUTH_TOKEN = process.env.REACT_APP_WORKER_AUTH_TOKEN;
+// Defina a URL do seu Backend no Render como uma variável de ambiente no Vercel.
+// No Vercel, variáveis de ambiente para o frontend devem começar com NEXT_PUBLIC_ ou REACT_APP_.
+// Use o prefixo que seu projeto React/Next.js espera (REACT_APP_ para CRA, NEXT_PUBLIC_ para Next.js).
+// SUBSTITUA PELA URL REAL DO SEU BACKEND RENDER!
+const RENDER_BACKEND_URL = process.env.NEXT_PUBLIC_RENDER_BACKEND_URL;
 
 
 export default function RealizarVendaPage() {
@@ -93,18 +96,15 @@ export default function RealizarVendaPage() {
                 .single();
             if (error) throw error;
             
-            // --- MUDANÇA AQUI: Chamar o Cloudflare Worker diretamente ---
-            if (!CLOUDFLARE_WORKER_URL || !WORKER_AUTH_TOKEN) {
-                throw new Error("As variáveis de ambiente para o Cloudflare Worker não estão configuradas no frontend.");
+            // --- MUDANÇA AQUI: Chamar o Backend no Render diretamente ---
+            if (!RENDER_BACKEND_URL) {
+                throw new Error("A variável de ambiente RENDER_BACKEND_URL não está configurada no frontend.");
             }
 
-            const response = await axios.post(CLOUDFLARE_WORKER_URL, {
+            // A requisição agora vai para o seu Backend no Render, na rota /api/emitir
+            const response = await axios.post(`${RENDER_BACKEND_URL}/api/emitir`, {
                 saleId: sale.id,
                 clientId: sale.client_id,
-            }, {
-                headers: {
-                    'X-Worker-Auth': WORKER_AUTH_TOKEN // Envia a chave de autenticação para o Worker
-                }
             });
 
             if (response.data && response.data.success) {
