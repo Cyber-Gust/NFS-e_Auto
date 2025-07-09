@@ -35,7 +35,7 @@ const initialFormState = {
 // No Vercel, variáveis de ambiente para o frontend devem começar com NEXT_PUBLIC_ ou REACT_APP_.
 // Use o prefixo que seu projeto React/Next.js espera (REACT_APP_ para CRA, NEXT_PUBLIC_ para Next.js).
 // SUBSTITUA PELA URL REAL DO SEU BACKEND RENDER!
-const RENDER_BACKEND_URL = process.env.NEXT_PUBLIC_RENDER_BACKEND_URL;
+const RENDER_BACKEND_URL = process.env.REACT_APP_RENDER_BACKEND_URL;
 
 
 export default function RealizarVendaPage() {
