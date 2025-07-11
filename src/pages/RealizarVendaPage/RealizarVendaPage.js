@@ -36,6 +36,7 @@ const initialFormState = {
 // Use o prefixo que seu projeto React/Next.js espera (REACT_APP_ para CRA, NEXT_PUBLIC_ para Next.js).
 // SUBSTITUA PELA URL REAL DO SEU BACKEND RENDER!
 const RENDER_BACKEND_URL = process.env.REACT_APP_RENDER_BACKEND_URL;
+console.log("URL do Backend Render que o frontend está usando:", RENDER_BACKEND_URL); // <--- Adicione esta linha AQUI
 
 
 export default function RealizarVendaPage() {
