@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select'; // Componente Select para pesquisa
+import Select from 'react-select';
 import { supabase } from '../../supabaseClient.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import axios from 'axios';
@@ -7,7 +7,6 @@ import ClientForm from '../../components/ClientForm/ClientForm.js';
 import InvoiceViewer from '../../components/InvoiceViewer/InvoiceViewer.js';
 import '../../components/ClientForm/ClientForm.css';
 import './RealizarVendaPage.css';
-import { useLocation } from 'react-router-dom'; // Importar useLocation
 
 const servicosOptions = [
   { value: 'Cristalização', label: 'Cristalização' },
@@ -32,8 +31,12 @@ const initialFormState = {
     observations: ''
 };
 
+// Defina a URL do seu Backend no Render como uma variável de ambiente no Vercel.
+// No Vercel, variáveis de ambiente para o frontend devem começar com NEXT_PUBLIC_ ou REACT_APP_.
+// Use o prefixo que seu projeto React/Next.js espera (REACT_APP_ para CRA, NEXT_PUBLIC_ para Next.js).
+// SUBSTITUA PELA URL REAL DO SEU BACKEND RENDER!
 const RENDER_BACKEND_URL = process.env.REACT_APP_RENDER_BACKEND_URL;
-console.log("URL do Backend Render que o frontend está usando:", RENDER_BACKEND_URL);
+console.log("URL do Backend Render que o frontend está usando:", RENDER_BACKEND_URL); // <--- Adicione esta linha AQUI
 
 
 export default function RealizarVendaPage() {
@@ -43,7 +46,6 @@ export default function RealizarVendaPage() {
     const [formData, setFormData] = useState(initialFormState);
     const [loading, setLoading] = useState(false);
     const [invoiceResult, setInvoiceResult] = useState(null);
-    const location = useLocation(); // Hook para acessar o estado de navegação
 
     async function fetchClients() {
         const { data } = await supabase.from('clients').select('id, name').order('name');
@@ -52,19 +54,10 @@ export default function RealizarVendaPage() {
 
     useEffect(() => {
         fetchClients();
-        // Lógica para pré-selecionar cliente se vier do estado de navegação
-        if (location.state && location.state.clientId) {
-            setFormData(prev => ({ ...prev, client_id: location.state.clientId }));
-        }
-    }, [location.state]); // Dependência para re-executar quando o estado de navegação muda
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    // Handler para o Select (react-select)
-    const handleClientSelectChange = (selectedOption) => {
-        setFormData(prev => ({ ...prev, client_id: selectedOption ? selectedOption.value : '' }));
     };
 
     const handleMultiSelectChange = (selectedOptions) => {
@@ -83,11 +76,6 @@ export default function RealizarVendaPage() {
             alert("Por favor, selecione pelo menos um serviço.");
             return;
         }
-        if (!formData.client_id) {
-            alert("Por favor, selecione um cliente.");
-            return;
-        }
-
         setLoading(true);
         setInvoiceResult(null);
         try {
@@ -109,10 +97,12 @@ export default function RealizarVendaPage() {
                 .single();
             if (error) throw error;
             
+            // --- MUDANÇA AQUI: Chamar o Backend no Render diretamente ---
             if (!RENDER_BACKEND_URL) {
                 throw new Error("A variável de ambiente RENDER_BACKEND_URL não está configurada no frontend.");
             }
 
+            // A requisição agora vai para o seu Backend no Render, na rota /api/emitir
             const response = await axios.post(`${RENDER_BACKEND_URL}/api/emitir`, {
                 saleId: sale.id,
                 clientId: sale.client_id,
@@ -132,11 +122,6 @@ export default function RealizarVendaPage() {
         }
     };
     
-    // Mapeia a lista de clientes para o formato que react-select espera
-    const clientOptions = clients.map(client => ({ value: client.id, label: client.name }));
-    // Encontra o cliente selecionado para o Select
-    const selectedClientOption = clientOptions.find(option => option.value === formData.client_id);
-
     return (
         <div className="page-container">
             <div className="page-header">
@@ -146,16 +131,10 @@ export default function RealizarVendaPage() {
                 <form onSubmit={handleSubmit} className="client-form sale-form">
                     <label>Cliente</label>
                     <div className="client-selector-group">
-                        <Select
-                            name="client_id"
-                            options={clientOptions}
-                            value={selectedClientOption} // Define o valor selecionado
-                            onChange={handleClientSelectChange} // Novo handler
-                            placeholder="Selecione ou pesquise um cliente..."
-                            isClearable={true} // Permite limpar a seleção
-                            isSearchable={true} // Habilita a pesquisa
-                            required
-                        />
+                        <select name="client_id" value={formData.client_id} onChange={handleChange} required>
+                            <option value="" disabled>Selecione um cliente</option>
+                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
                         <button type="button" onClick={() => setShowClientModal(true)} className="add-client-button">+</button>
                     </div>
 
@@ -169,7 +148,6 @@ export default function RealizarVendaPage() {
                         placeholder="Selecione os serviços..."
                         value={formData.service_description}
                         onChange={handleMultiSelectChange}
-                        required
                     />
                     
                     <label>Valor (R$)</label>

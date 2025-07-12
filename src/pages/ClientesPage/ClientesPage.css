@@ -1,5 +1,3 @@
-/* Existing CSS for .clients-table, .page-button-primary, .action-buttons, etc. */
-
 .clients-table {
   width: 100%;
   border-collapse: collapse;
@@ -23,36 +21,36 @@
 .page-button-primary {
   /* --- Estrutura e Cor --- */
   background-color: var(--primary-blue); /* Cor de fundo principal */
-  color: #FFFFFF;                      /* Texto branco para alto contraste */
-  border: none;                        /* Sem borda para um look limpo */
+  color: #FFFFFF;                       /* Texto branco para alto contraste */
+  border: none;                         /* Sem borda para um look limpo */
   
   /* --- Espaçamento e Forma --- */
-  padding: 12px 24px;                  /* Espaçamento interno generoso */
-  border-radius: 6px;                  /* Cantos levemente arredondados */
+  padding: 12px 24px;                   /* Espaçamento interno generoso */
+  border-radius: 6px;                   /* Cantos levemente arredondados */
 
   /* --- Texto --- */
-  font-size: 16px;                     /* Tamanho de fonte legível */
-  font-weight: 600;                    /* Peso da fonte (o mesmo do <th>) */
+  font-size: 16px;                      /* Tamanho de fonte legível */
+  font-weight: 600;                     /* Peso da fonte (o mesmo do <th>) */
   text-align: center;
-  text-decoration: none;               /* Remove sublinhado se usado em <a> */
+  text-decoration: none;                /* Remove sublinhado se usado em <a> */
 
   /* --- Interatividade --- */
   cursor: pointer;
-  transition: all 0.2s ease-in-out;    /* Transição suave para hover/active */
+  transition: all 0.2s ease-in-out;     /* Transição suave para hover/active */
 }
 
 /* Efeito ao passar o mouse por cima */
 .page-button-primary:hover {
-  filter: brightness(90%);             /* Escurece levemente o botão */
-  transform: translateY(-2px);         /* Efeito sutil de "elevação" */
+  filter: brightness(90%);              /* Escurece levemente o botão */
+  transform: translateY(-2px);          /* Efeito sutil de "elevação" */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidade */
 }
 
 /* Efeito ao clicar */
 .page-button-primary:active {
-  filter: brightness(80%);             /* Escurece um pouco mais */
-  transform: translateY(0);            /* Remove a elevação do hover */
-  box-shadow: none;                    /* Remove a sombra */
+  filter: brightness(80%);              /* Escurece um pouco mais */
+  transform: translateY(0);             /* Remove a elevação do hover */
+  box-shadow: none;                     /* Remove a sombra */
 }
 
 .action-buttons {
@@ -90,36 +88,4 @@
 /* Cor específica para o ícone de lixeira no hover */
 .action-button.delete:hover {
   color: #E53E3E; /* Vermelho para indicar perigo/exclusão */
-}
-
-/* NOVO CSS PARA OS BOTÕES DE ORDENAÇÃO */
-.sort-buttons-container {
-  display: flex;
-  gap: 10px; /* Espaçamento entre os botões */
-  margin-bottom: 20px; /* Espaçamento abaixo dos botões */
-  justify-content: flex-start; /* Alinha à esquerda */
-  padding: 0 20px; /* Adiciona padding para alinhar com o conteúdo da página */
-}
-
-.sort-button {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease-in-out;
-}
-
-.sort-button:hover {
-  background-color: #e0e0e0;
-  transform: translateY(-1px);
-}
-
-.sort-button.active {
-  background-color: var(--primary-blue); /* Cor primária para o botão ativo */
-  color: #fff;
-  border-color: var(--primary-blue);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
